@@ -15,10 +15,15 @@ public class AuthData {
 
     private String login;
     private String hash;
+    private Long id;
 
-    public AuthData(String login, String hash) {
+    private boolean logged = false;
+
+    public AuthData(String login, String hash, Long id, boolean logged) {
         this.login = login;
         this.hash = hash;
+        this.id = id;
+        this.logged = logged;
     }
 
 }

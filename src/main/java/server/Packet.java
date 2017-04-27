@@ -7,13 +7,15 @@ public class Packet {
     private String type;
     private Message message;
     private Room room;
+    private Long clientId;
     private ServiceMessage serviceMessage;
     private AuthData authData;
 
-    public Packet(String type, Message message, Room room, ServiceMessage serviceMessage, AuthData auth) {
+    public Packet(String type, Message message, Room room, Long clientId, ServiceMessage serviceMessage, AuthData auth) {
         this.type = type;
         this.message = message;
         this.room = room;
+        this.clientId = clientId;
         this.serviceMessage = serviceMessage;
         this.authData = auth;
     }
@@ -32,6 +34,10 @@ public class Packet {
 
     public Room getRoom() {
         return room;
+    }
+
+    public Long getClientId() {
+        return clientId;
     }
 
     public ServiceMessage getServiceMessage() {

@@ -9,6 +9,35 @@ import java.security.KeyStore;
  * Created by SurfinBirb on 26.04.2017.
  */
 public class ServerThread implements Runnable {
+    private static volatile ServerThread instance;
+
+    private ServerThread() {
+        this.live = true;
+
+    }
+
+    public static ServerThread getInstance() {
+        ServerThread localInstance = instance;
+        if (localInstance == null) {
+            synchronized (Storage.class) {
+                localInstance = instance;
+                if (localInstance == null) {
+                    instance = localInstance = new ServerThread();
+                }
+            }
+        }
+        return localInstance;
+    }
+
+    private boolean live;
+
+    private void setLive(boolean live) {
+        this.live = live;
+    }
+
+    public boolean isLive() {
+        return live;
+    }
 
     public void run(){
         Storage storage = Storage.getInstance();
@@ -22,7 +51,7 @@ public class ServerThread implements Runnable {
 
             Socket currentSocket;
 
-            while (true) { //For every new client
+            while (live) { //For every new client
 
                 currentSocket = currentServerSocket.accept(); //Get new socket
                 if (currentSocket != null) { //If success
@@ -56,6 +85,27 @@ public class ServerThread implements Runnable {
         sslContext.init(keyManagers,  trustManagers, null);
 
         return sslContext;
+    }
+
+    /**
+     * This method shutdowns the server
+     * @throws Exception
+     */
+    public void shutdown() throws Exception {
+        String shutdownMessage = new Packer().pack(
+                new Packet("servicemessage",
+                        null,
+                        null,
+                        null,
+                        new ServiceMessage("server shutdown"),
+                        null
+                )
+        );
+        Sender.getInstance().broadcast(shutdownMessage);
+        for (SocketThread socketThread: Storage.getInstance().getThreadHashMap().values()) {
+            socketThread.closeSocket();
+        }
+        setLive(false);
     }
 
 }

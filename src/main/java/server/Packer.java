@@ -7,7 +7,6 @@ import com.thoughtworks.xstream.XStream;
  */
 public class Packer {
 
-
     public String pack(Packet b){
         XStream xstream = new XStream();
         xstream.alias("pack", Packet.class);

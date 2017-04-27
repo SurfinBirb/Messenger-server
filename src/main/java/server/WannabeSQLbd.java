@@ -1,6 +1,8 @@
 package server;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by SurfinBirb on 26.04.2017.
@@ -11,11 +13,22 @@ import java.util.HashMap;
 public class WannabeSQLbd {
     private static volatile WannabeSQLbd instance;
 
+    private volatile HashMap<String, Long> loginToLong;
+    private volatile HashMap<Long, String> idPasswordHash;
+    private volatile HashMap<Long, Room> roomHashMap;
+
     private WannabeSQLbd() {
         this.loginToLong = new HashMap<>();
         loginToLong.put("tester", 1L); //login: tester, id: 1
+        loginToLong.put("tester2", 2L);//login: tester2, id: 1
         this.idPasswordHash = new HashMap<>();
         idPasswordHash.put(1L, "d8578edf8458ce06fbc5bb76a58c5ca4"); // password: qwerty
+        idPasswordHash.put(2L, "d8578edf8458ce06fbc5bb76a58c5ca4");
+        List<Long> idList = new LinkedList<>();
+        idList.add(1L);
+        idList.add(2L);
+        this.roomHashMap = new HashMap<>();
+        roomHashMap.put(1L, new Room(1L,1L, "TestRoom", idList));
     }
 
     public static WannabeSQLbd getInstance() {
@@ -31,9 +44,9 @@ public class WannabeSQLbd {
         return localInstance;
     }
 
-    private volatile HashMap<String, Long> loginToLong;
-
-    private volatile HashMap<Long, String> idPasswordHash;
+    public HashMap<Long, Room> getRoomHashMap() {
+        return roomHashMap;
+    }
 
     public HashMap<Long, String> getIdPasswordHash() {
         return idPasswordHash;
