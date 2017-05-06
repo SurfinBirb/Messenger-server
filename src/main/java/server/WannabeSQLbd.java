@@ -1,8 +1,8 @@
 package server;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * Created by SurfinBirb on 26.04.2017.
@@ -13,28 +13,28 @@ import java.util.List;
 public class WannabeSQLbd {
     private static volatile WannabeSQLbd instance;
 
-    private volatile HashMap<String, Long> loginToLong;
-    private volatile HashMap<Long, String> idPasswordHash;
-    private volatile HashMap<Long, Room> roomHashMap;
+    private volatile TreeMap<String, Long> loginToLong;
+    private volatile TreeMap<Long, String> idPasswordHash;
+    private volatile TreeMap<Long, Room> roomTreeMap;
 
     private WannabeSQLbd() {
-        this.loginToLong = new HashMap<>();
+        this.loginToLong = new TreeMap<>();
         loginToLong.put("tester", 1L); //login: tester, id: 1
         loginToLong.put("tester2", 2L);//login: tester2, id: 1
-        this.idPasswordHash = new HashMap<>();
+        this.idPasswordHash = new TreeMap<>();
         idPasswordHash.put(1L, "d8578edf8458ce06fbc5bb76a58c5ca4"); // password: qwerty
         idPasswordHash.put(2L, "d8578edf8458ce06fbc5bb76a58c5ca4");
         List<Long> idList = new LinkedList<>();
         idList.add(1L);
         idList.add(2L);
-        this.roomHashMap = new HashMap<>();
-        roomHashMap.put(1L, new Room(1L,1L, "TestRoom", idList));
+        this.roomTreeMap = new TreeMap<>();
+        roomTreeMap.put(1L, new Room(1L,1L, "TestRoom", idList));
     }
 
     public static WannabeSQLbd getInstance() {
         WannabeSQLbd localInstance = instance;
         if (localInstance == null) {
-            synchronized (Storage.class) {
+            synchronized (WannabeSQLbd.class) {
                 localInstance = instance;
                 if (localInstance == null) {
                     instance = localInstance = new WannabeSQLbd();
@@ -44,15 +44,15 @@ public class WannabeSQLbd {
         return localInstance;
     }
 
-    public HashMap<Long, Room> getRoomHashMap() {
-        return roomHashMap;
+    public TreeMap<Long, Room> getRoomTreeMap() {
+        return roomTreeMap;
     }
 
-    public HashMap<Long, String> getIdPasswordHash() {
+    public TreeMap<Long, String> getIdPasswordHash() {
         return idPasswordHash;
     }
 
-    public HashMap<String, Long> getLoginToId() {
+    public TreeMap<String, Long> getLoginToId() {
         return loginToLong;
     }
 }

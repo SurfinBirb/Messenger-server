@@ -1,6 +1,6 @@
 package server;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -16,7 +16,7 @@ public class Storage {
         this.serviceMessages = new LinkedBlockingDeque<>();
         this.outputQueue = new LinkedBlockingDeque<>();
         this.errorMessages = new LinkedBlockingDeque<>();
-        this.threadHashMap = new HashMap<>();
+        this.threadTreeMap = new TreeMap<>();
     }
 
     public static Storage getInstance() {
@@ -37,10 +37,10 @@ public class Storage {
     private volatile BlockingDeque<ServiceMessage>  serviceMessages;
     private volatile BlockingDeque<Packet>          outputQueue;
     private volatile BlockingDeque<String>          errorMessages;
-    private volatile HashMap<Long, SocketThread>    threadHashMap;
+    private volatile TreeMap<Long, SocketRunnable> threadTreeMap;
 
-    public HashMap<Long, SocketThread>      getThreadHashMap() {
-        return threadHashMap;
+    public TreeMap<Long, SocketRunnable> getThreadTreeMap() {
+        return threadTreeMap;
     }
 
     public BlockingDeque<Room>              getRoomCreateRequests() {

@@ -8,21 +8,21 @@ import java.security.KeyStore;
 /**
  * Created by SurfinBirb on 26.04.2017.
  */
-public class ServerThread implements Runnable {
-    private static volatile ServerThread instance;
+public class ServerRunnable implements Runnable {
+    private static volatile ServerRunnable instance;
 
-    private ServerThread() {
+    private ServerRunnable() {
         this.live = true;
 
     }
 
-    public static ServerThread getInstance() {
-        ServerThread localInstance = instance;
+    public static ServerRunnable getInstance() {
+        ServerRunnable localInstance = instance;
         if (localInstance == null) {
-            synchronized (Storage.class) {
+            synchronized (ServerRunnable.class) {
                 localInstance = instance;
                 if (localInstance == null) {
-                    instance = localInstance = new ServerThread();
+                    instance = localInstance = new ServerRunnable();
                 }
             }
         }
@@ -31,7 +31,7 @@ public class ServerThread implements Runnable {
 
     private boolean live;
 
-    private void setLive(boolean live) {
+    public void setLive(boolean live) {
         this.live = live;
     }
 
@@ -39,6 +39,7 @@ public class ServerThread implements Runnable {
         return live;
     }
 
+    @Override
     public void run(){
         Storage storage = Storage.getInstance();
         try {
@@ -55,14 +56,17 @@ public class ServerThread implements Runnable {
 
                 currentSocket = currentServerSocket.accept(); //Get new socket
                 if (currentSocket != null) { //If success
-                    SocketThread socketThread = new SocketThread(currentSocket); //Create new SocketThread implements Runnable
-                    Thread thread = new Thread(socketThread); //Create new thread
+                    SocketRunnable socketRunnable = new SocketRunnable(currentSocket); //Create new SocketRunnable implements Runnable
+                    Thread thread = new Thread(socketRunnable); //Create new thread
                     thread.setDaemon(true); //As daemon
                     thread.start(); //And launch it
                 }
             }
         } catch (Exception e) {
-            storage.getErrorMessages().add(e.getMessage());
+            if (e != null) {
+                String s = e.getMessage();
+                storage.getErrorMessages().offerLast(s);
+            }
         }
     }
 
@@ -102,8 +106,8 @@ public class ServerThread implements Runnable {
                 )
         );
         Sender.getInstance().broadcast(shutdownMessage);
-        for (SocketThread socketThread: Storage.getInstance().getThreadHashMap().values()) {
-            socketThread.closeSocket();
+        for (SocketRunnable socketRunnable : Storage.getInstance().getThreadTreeMap().values()) {
+            socketRunnable.closeSocket();
         }
         setLive(false);
     }

@@ -6,19 +6,20 @@ import java.net.Socket;
 /**
  * Created by SurfinBirb on 23.04.2017.
  */
-public class SocketThread implements Runnable {
+public class SocketRunnable implements Runnable {
 
     private Socket socket;
     private Long id;
 
     /**
-     * SocketThread
+     * SocketRunnable
      * @param socket - socket
      */
-    public SocketThread(Socket socket) {
+    public SocketRunnable(Socket socket) {
         this.socket = socket;
     }
 
+    @Override
     public void run(){
         Storage storage = Storage.getInstance();
         WannabeSQLbd bd = WannabeSQLbd.getInstance();
@@ -28,7 +29,7 @@ public class SocketThread implements Runnable {
                 AuthData authData = new Unpacker().unpack(listen(socket.getInputStream())).getAuthData();
                 this.id = bd.getLoginToId().get(authData.getLogin());
                 if (authData.getHash().equals(bd.getIdPasswordHash().get(id))) {                //Сравнение хэшей паролей
-                    storage.getThreadHashMap().put(bd.getLoginToId().get(authData.getLogin()), this);
+                    storage.getThreadTreeMap().put(bd.getLoginToId().get(authData.getLogin()), this);
                     Sender.getInstance().send(id, new Packer().pack(
                             new Packet(
                                     "auth",
@@ -78,7 +79,11 @@ public class SocketThread implements Runnable {
                     );
                 }
             }
-        } catch (Exception e){storage.getErrorMessages().add(e.getMessage());}
+        } catch (Exception e){
+            if (e != null) {
+            storage.getErrorMessages().offerLast(e.getMessage());
+        }
+        }
     }
 
     /**

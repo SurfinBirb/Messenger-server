@@ -12,7 +12,7 @@ public class Sender {
     public static Sender getInstance() {
         Sender localInstance = instance;
         if (localInstance == null) {
-            synchronized (Storage.class) {
+            synchronized (Sender.class) {
                 localInstance = instance;
                 if (localInstance == null) {
                     instance = localInstance = new Sender();
@@ -31,7 +31,7 @@ public class Sender {
     public void send(Room room, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
         for (Long id: room.getIdList()) {
-            Socket socket = storage.getThreadHashMap().get(id).getSocket();
+            Socket socket = storage.getThreadTreeMap().get(id).getSocket();
             DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
             dataOutputStream.writeUTF(xmlPacket);
             dataOutputStream.flush();
@@ -46,7 +46,7 @@ public class Sender {
      */
     public void send(Long id, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
-        Socket socket = storage.getThreadHashMap().get(id).getSocket();
+        Socket socket = storage.getThreadTreeMap().get(id).getSocket();
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         dataOutputStream.writeUTF(xmlPacket);
         dataOutputStream.flush();
@@ -58,11 +58,13 @@ public class Sender {
      * @throws Exception
      */
     public void broadcast(String xmlPacket){
-        Storage.getInstance().getThreadHashMap().keySet().forEach(id -> {
+        Storage.getInstance().getThreadTreeMap().keySet().forEach(id -> {
             try {
                 send(id, xmlPacket);
             } catch (Exception e) {
-                Storage.getInstance().getErrorMessages().add(e.getMessage());
+                if (e != null) {
+                    Storage.getInstance().getErrorMessages().offerLast(e.getMessage());
+                }
             }
         });
     }
