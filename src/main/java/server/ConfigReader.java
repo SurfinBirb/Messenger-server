@@ -14,7 +14,7 @@ public class ConfigReader {
     public static ConfigReader getInstance() throws Exception {
         ConfigReader localInstance = instance;
         if (localInstance == null) {
-            synchronized (Storage.class) {
+            synchronized (ConfigReader.class) {
                 localInstance = instance;
                 if (localInstance == null) {
                     instance = localInstance = new ConfigReader();
@@ -34,6 +34,7 @@ private Config config;
         XStream xstream =  new XStream();
         File configFile = new File("src/main/java/config/config.xml");
         xstream.alias("ServerConfiguration", ServerConfiguration.class);
+        xstream.alias("config", Config.class);
         this.config = (Config) xstream.fromXML(configFile);
     }
 

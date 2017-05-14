@@ -12,7 +12,7 @@ public class Unpacker {
 
     /**
      *
-     * @param xmlString - String wiyh XML structure
+     * @param xmlString - String with XML structure
      * @return Packet
      */
     public Packet unpack(String xmlString){

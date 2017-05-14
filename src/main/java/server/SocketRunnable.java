@@ -2,6 +2,7 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.TreeMap;
 
 /**
  * Created by SurfinBirb on 23.04.2017.
@@ -9,10 +10,12 @@ import java.net.Socket;
 public class SocketRunnable implements Runnable {
 
     private Socket socket;
-    private Long id;
+    private Long clientId;
 
     /**
      * SocketRunnable
+     * При подключении клиента создается тред (из SocketRunnable), обрабатывающий InputStream сокета.
+     * Принимает от клиента xml-структуру. Далее структура превращается в объект класса Packet, далее обрабатывающийся
      * @param socket - socket
      */
     public SocketRunnable(Socket socket) {
@@ -26,11 +29,17 @@ public class SocketRunnable implements Runnable {
         int attempts = 0;
         try {
             for (int i = 0; i <= 2; i++) {
-                AuthData authData = new Unpacker().unpack(listen(socket.getInputStream())).getAuthData();
-                this.id = bd.getLoginToId().get(authData.getLogin());
-                if (authData.getHash().equals(bd.getIdPasswordHash().get(id))) {                //Сравнение хэшей паролей
-                    storage.getThreadTreeMap().put(bd.getLoginToId().get(authData.getLogin()), this);
-                    Sender.getInstance().send(id, new Packer().pack(
+                String xmlPacket = listen(socket.getInputStream());
+                AuthData authData = new Unpacker().unpack(xmlPacket).getAuthData();
+                System.out.println("\nLogin attempt:\n    login = " + authData.getLogin() + "; passwordHash = " + authData.getHash() + "\n");
+                Long clientId = bd.getClientId(authData.getLogin());
+                if (authData.getHash().equals(bd.getIdPasswordHash(clientId))) {               //Сравнение хэшей паролей
+                    this.clientId = clientId;
+                    storage.storeThread(clientId, this);
+                    TreeMap<Long, Room> roomMap = new TreeMap<>();
+                    for (Long roomId : bd.getRoomIds(clientId)) roomMap.put(roomId, bd.getRoomById(roomId));
+                    System.out.println("Success");
+                    Sender.getInstance().send(clientId, new Packer().pack(
                             new Packet(
                                     "auth",
                                     null,
@@ -40,11 +49,14 @@ public class SocketRunnable implements Runnable {
                                     new AuthData(
                                             null,
                                             null,
-                                            id,
-                                            true)
-                                )
+                                            clientId,
+                                            true
+                                    ),
+                                    roomMap
                             )
-                        );
+                            )
+                    );
+
                     while (!socket.isClosed()) {
                         Packet packet = new Unpacker().unpack(listen(socket.getInputStream()));
                         if (packet.getType().equals("Message")) {
@@ -57,32 +69,37 @@ public class SocketRunnable implements Runnable {
                             storage.getServiceMessages().add(packet.getServiceMessage());
                         }
                     }
-                }
-                attempts++;
-                if (attempts == 3){
-                    DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-                    dataOutputStream.writeUTF(new Packer().pack(
-                            new Packet(
-                                    "auth",
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    new AuthData(
-                                            authData.getLogin(),
-                                            authData.getHash(),
-                                            null,
-                                            false
-                                    )
-                            )
-                    )
-                    );
+                    break;
+                } else {
+                    attempts++;
+                    if (attempts == 3) {
+                        xmlPacket = new Packer().pack(
+                                new Packet(
+                                        "auth",
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        new AuthData(
+                                                null,
+                                                null,
+                                                null,
+                                                false
+                                        ),
+                                        null
+                                )
+                        );
+                        System.out.println("\nPOST:\n" + xmlPacket + "\n");
+                        PrintWriter outputWriter = new PrintWriter(socket.getOutputStream(), true);
+                        outputWriter.println(xmlPacket);
+                    }
                 }
             }
         } catch (Exception e){
-            if (e != null) {
-            storage.getErrorMessages().offerLast(e.getMessage());
-        }
+            if (e.getMessage() != null) {
+                e.printStackTrace();
+                storage.getErrorMessages().offerLast(e.getMessage());
+            }
         }
     }
 
@@ -92,20 +109,53 @@ public class SocketRunnable implements Runnable {
      * @throws Exception
      */
     private String listen(InputStream socketInputStream) throws Exception{
-        int c;
-        StringBuilder stringBuilder = new StringBuilder();
-        while ( (c = socketInputStream.read()) != -1){
-            stringBuilder.append((char) c);
-        }
-        return stringBuilder.toString();
+
+        /**Вариант 1*/
+
+//        int c;
+//        StringBuilder stringBuilder = new StringBuilder();
+//        while ( (c = socketInputStream.read()) != -1){
+//            stringBuilder.append((char) c);
+//        }
+//        stringBuilder.setCharAt(0, '<');
+//        System.out.println("\nGET:\n" + stringBuilder.toString() + "\n");
+//        return stringBuilder.toString();
+
+        /**Вариант 2*/
+
+//        int c;
+//        StringBuilder stringBuilder = new StringBuilder();
+//        while ( (c = socketInputStream.read()) != -1){
+//            stringBuilder.append((char) c);
+//        }
+//        stringBuilder.deleteCharAt(0).deleteCharAt(0);
+//        System.out.println("\nGET:\n" + stringBuilder.toString() + "\n");
+//        return stringBuilder.toString();
+
+
+        /**Вариант 3: не работает*/
+
+//        DataInputStream dataInputStream = new DataInputStream(socketInputStream);
+//        PushbackInputStream pushbackInputStream = new PushbackInputStream(socketInputStream);
+//        StringBuilder stringBuilder = new StringBuilder();
+//        String line = null;
+//        int c;
+//        while ((c = pushbackInputStream.read()) != -1){
+//            pushbackInputStream.unread(c);
+//            line = dataInputStream.readUTF();
+//            stringBuilder.append(line);
+//        }
+//        System.out.println("\nGET:\n" + stringBuilder.toString() + "\n");
+//        return stringBuilder.toString();
+
     }
 
     public Socket getSocket() {
         return socket;
     }
 
-    public Long getId() {
-        return id;
+    public Long getClientId() {
+        return clientId;
     }
 
     public void closeSocket() throws IOException {

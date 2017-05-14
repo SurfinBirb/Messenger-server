@@ -62,4 +62,8 @@ public class Storage {
     public BlockingDeque<ServiceMessage>    getServiceMessages() {
         return serviceMessages;
     }
+
+    public void storeThread(Long clientId, SocketRunnable socketRunnable){
+        threadTreeMap.put(clientId,socketRunnable);
+    }
 }

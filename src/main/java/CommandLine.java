@@ -62,9 +62,7 @@ public class CommandLine {
                     }
                 }
             }
-            try {
-                this.wait(500);
-            } catch (Exception ignore){}
+            Thread.sleep(250);
         }
     }
 }

@@ -1,5 +1,6 @@
 package server;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -7,18 +8,22 @@ import java.util.List;
  */
 public class Room {
 
-    private Long roomId;
-    private Long creatorId;
+    private volatile Long roomId;
+    private volatile Long creatorId;
+    private volatile LinkedList<Message> messages;
+    private volatile String roomName;
+    private volatile List<Long> idList;
 
     public Long getCreatorId() {
         return creatorId;
     }
 
-    public Room(Long creatorId,Long roomId, String roomName, List<Long> idList) {
+    public Room(Long creatorId,Long roomId, String roomName, List<Long> idList, LinkedList<Message> messages) {
         this.creatorId = creatorId;
         this.roomId = roomId;
         this.roomName = roomName;
         this.idList = idList;
+        this.messages = messages;
     }
 
     public Long getRoomId() {
@@ -29,10 +34,11 @@ public class Room {
         return roomName;
     }
 
-    private String roomName;
-    private List<Long> idList;
-
     public List<Long> getIdList() {
         return idList;
+    }
+
+    public LinkedList<Message> getMessages() {
+        return messages;
     }
 }

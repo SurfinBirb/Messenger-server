@@ -1,5 +1,5 @@
 <config>
-    <ServerConfiguration>
-        <Port>666</Port>
-    </ServerConfiguration>
+    <serverConfiguration>
+        <port>666</port>
+    </serverConfiguration>
 </config>

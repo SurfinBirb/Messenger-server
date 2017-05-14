@@ -1,6 +1,8 @@
 package server;
 
 import java.io.DataOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
@@ -32,9 +34,8 @@ public class Sender {
         Storage storage = Storage.getInstance();
         for (Long id: room.getIdList()) {
             Socket socket = storage.getThreadTreeMap().get(id).getSocket();
-            DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-            dataOutputStream.writeUTF(xmlPacket);
-            dataOutputStream.flush();
+            PrintWriter outputWriter = new PrintWriter(socket.getOutputStream(), true);
+            outputWriter.println(xmlPacket);
         }
     }
 
@@ -47,9 +48,9 @@ public class Sender {
     public void send(Long id, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
         Socket socket = storage.getThreadTreeMap().get(id).getSocket();
-        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-        dataOutputStream.writeUTF(xmlPacket);
-        dataOutputStream.flush();
+        PrintWriter outputWriter = new PrintWriter(socket.getOutputStream(), true);
+        System.out.println("\nPOST:\n" + xmlPacket + "\n");
+        outputWriter.println(xmlPacket);
     }
 
     /**
@@ -63,6 +64,7 @@ public class Sender {
                 send(id, xmlPacket);
             } catch (Exception e) {
                 if (e != null) {
+                    e.printStackTrace();
                     Storage.getInstance().getErrorMessages().offerLast(e.getMessage());
                 }
             }

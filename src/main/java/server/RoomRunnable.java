@@ -39,7 +39,8 @@ public class RoomRunnable implements Runnable {
                                             room.getCreatorId(),
                                             roomid,
                                             room.getRoomName(),
-                                            new LinkedList<>(room.getIdList())
+                                            new LinkedList<>(room.getIdList()),
+                                            new LinkedList<>()
                                     )
                             );
                             room = storage.getRoomCreateRequests().poll();
@@ -51,6 +52,7 @@ public class RoomRunnable implements Runnable {
                                             null,
                                             room.getCreatorId(),
                                             new ServiceMessage("Room already exists"),
+                                            null,
                                             null
                                     )
                             );

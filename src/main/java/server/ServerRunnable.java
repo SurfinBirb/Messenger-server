@@ -56,6 +56,11 @@ public class ServerRunnable implements Runnable {
 
                 currentSocket = currentServerSocket.accept(); //Get new socket
                 if (currentSocket != null) { //If success
+                    System.out.println(
+                            "\nConnection established:\n    address = " + currentSocket.getInetAddress().toString() +
+                            "\n    localPort = " + currentSocket.getLocalPort() +
+                            "\n    port = " + currentSocket.getPort()
+                    );
                     SocketRunnable socketRunnable = new SocketRunnable(currentSocket); //Create new SocketRunnable implements Runnable
                     Thread thread = new Thread(socketRunnable); //Create new thread
                     thread.setDaemon(true); //As daemon
@@ -63,8 +68,9 @@ public class ServerRunnable implements Runnable {
                 }
             }
         } catch (Exception e) {
-            if (e != null) {
+            if ((e != null) || (e.getMessage() != null)) {
                 String s = e.getMessage();
+                System.out.println(s);
                 storage.getErrorMessages().offerLast(s);
             }
         }
@@ -102,6 +108,7 @@ public class ServerRunnable implements Runnable {
                         null,
                         null,
                         new ServiceMessage("server shutdown"),
+                        null,
                         null
                 )
         );
