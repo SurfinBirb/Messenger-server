@@ -59,13 +59,13 @@ public class SocketRunnable implements Runnable {
 
                     while (!socket.isClosed()) {
                         Packet packet = new Unpacker().unpack(listen(socket.getInputStream()));
-                        if (packet.getType().equals("Message")) {
+                        if (packet.getType().equals("message")) {
                             storage.getInputMessageQueue().add(packet.getMessage());
                         }
-                        if (packet.getType().equals("Room")) {
+                        if (packet.getType().equals("room")) {
                             storage.getRoomCreateRequests().add(packet.getRoom());
                         }
-                        if (packet.getType().equals("ServiceMessage")) {
+                        if (packet.getType().equals("serviceMessage")) {
                             storage.getServiceMessages().add(packet.getServiceMessage());
                         }
                     }
@@ -110,43 +110,10 @@ public class SocketRunnable implements Runnable {
      */
     private String listen(InputStream socketInputStream) throws Exception{
 
-        /**Вариант 1*/
-
-//        int c;
-//        StringBuilder stringBuilder = new StringBuilder();
-//        while ( (c = socketInputStream.read()) != -1){
-//            stringBuilder.append((char) c);
-//        }
-//        stringBuilder.setCharAt(0, '<');
-//        System.out.println("\nGET:\n" + stringBuilder.toString() + "\n");
-//        return stringBuilder.toString();
-
-        /**Вариант 2*/
-
-//        int c;
-//        StringBuilder stringBuilder = new StringBuilder();
-//        while ( (c = socketInputStream.read()) != -1){
-//            stringBuilder.append((char) c);
-//        }
-//        stringBuilder.deleteCharAt(0).deleteCharAt(0);
-//        System.out.println("\nGET:\n" + stringBuilder.toString() + "\n");
-//        return stringBuilder.toString();
-
-
-        /**Вариант 3: не работает*/
-
-//        DataInputStream dataInputStream = new DataInputStream(socketInputStream);
-//        PushbackInputStream pushbackInputStream = new PushbackInputStream(socketInputStream);
-//        StringBuilder stringBuilder = new StringBuilder();
-//        String line = null;
-//        int c;
-//        while ((c = pushbackInputStream.read()) != -1){
-//            pushbackInputStream.unread(c);
-//            line = dataInputStream.readUTF();
-//            stringBuilder.append(line);
-//        }
-//        System.out.println("\nGET:\n" + stringBuilder.toString() + "\n");
-//        return stringBuilder.toString();
+        DataInputStream dataInputStream = new DataInputStream(socketInputStream);
+        String line = dataInputStream.readUTF();
+        System.out.println("\nGET:\n" + line + "\n");
+        return line;
 
     }
 

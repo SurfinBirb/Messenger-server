@@ -33,9 +33,10 @@ public class Sender {
     public void send(Room room, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
         for (Long id: room.getIdList()) {
-            Socket socket = storage.getThreadTreeMap().get(id).getSocket();
-            PrintWriter outputWriter = new PrintWriter(socket.getOutputStream(), true);
-            outputWriter.println(xmlPacket);
+             DataOutputStream dataOutputStream =  new DataOutputStream(storage.getThreadTreeMap().get(id).getSocket().getOutputStream());
+            dataOutputStream.writeUTF(xmlPacket);
+            dataOutputStream.flush();
+            System.out.println("\nPOST:\n" + xmlPacket + "\n");
         }
     }
 
@@ -47,10 +48,10 @@ public class Sender {
      */
     public void send(Long id, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
-        Socket socket = storage.getThreadTreeMap().get(id).getSocket();
-        PrintWriter outputWriter = new PrintWriter(socket.getOutputStream(), true);
+        DataOutputStream dataOutputStream = new DataOutputStream(storage.getThreadTreeMap().get(id).getSocket().getOutputStream());
+        dataOutputStream.writeUTF(xmlPacket);
+        dataOutputStream.flush();
         System.out.println("\nPOST:\n" + xmlPacket + "\n");
-        outputWriter.println(xmlPacket);
     }
 
     /**
