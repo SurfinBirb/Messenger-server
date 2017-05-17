@@ -60,7 +60,17 @@ public class SocketRunnable implements Runnable {
                     while (!socket.isClosed()) {
                         Packet packet = new Unpacker().unpack(listen(socket.getInputStream()));
                         if (packet.getType().equals("message")) {
-                            storage.getInputMessageQueue().add(packet.getMessage());
+                            Sender.getInstance().send(bd.getRoomById(packet.getMessage().roomid), new Packer().pack(
+                                    new Packet(
+                                            "message",
+                                            packet.getMessage(),
+                                            null,
+                                            packet.getClientId(),
+                                            null,
+                                            null,
+                                            null
+                                    )
+                            ));
                         }
                         if (packet.getType().equals("room")) {
                             storage.getRoomCreateRequests().add(packet.getRoom());

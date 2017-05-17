@@ -33,10 +33,13 @@ public class Sender {
     public void send(Room room, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
         for (Long id: room.getIdList()) {
-             DataOutputStream dataOutputStream =  new DataOutputStream(storage.getThreadTreeMap().get(id).getSocket().getOutputStream());
-            dataOutputStream.writeUTF(xmlPacket);
-            dataOutputStream.flush();
-            System.out.println("\nPOST:\n" + xmlPacket + "\n");
+            Socket socket = storage.getThreadTreeMap().get(id).getSocket();
+            if(socket != null) {
+                DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                dataOutputStream.writeUTF(xmlPacket);
+                dataOutputStream.flush();
+                System.out.println("\nPOST:\n" + xmlPacket + "\n");
+            } else storage.getThreadTreeMap().remove(id);
         }
     }
 
