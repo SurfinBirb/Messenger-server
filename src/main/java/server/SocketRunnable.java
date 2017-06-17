@@ -26,63 +26,63 @@ public class SocketRunnable implements Runnable {
     public void run(){
         Storage storage = Storage.getInstance();
         WannabeSQLbd bd = WannabeSQLbd.getInstance();
-        int attempts = 0;
         try {
             for (int i = 0; i <= 2; i++) {
                 String xmlPacket = listen(socket.getInputStream());
                 AuthData authData = new Unpacker().unpack(xmlPacket).getAuthData();
                 System.out.println("\nLogin attempt:\n    login = " + authData.getLogin() + "; passwordHash = " + authData.getHash() + "\n");
                 Long clientId = bd.getClientId(authData.getLogin());
-                if (authData.getHash().equals(bd.getIdPasswordHash(clientId))) {               //Сравнение хэшей паролей
-                    this.clientId = clientId;
-                    storage.storeThread(clientId, this);
-                    TreeMap<Long, Room> roomMap = new TreeMap<>();
-                    for (Long roomId : bd.getRoomIds(clientId)) roomMap.put(roomId, bd.getRoomById(roomId));
-                    System.out.println("Success");
-                    Sender.getInstance().send(clientId, new Packer().pack(
-                            new Packet(
-                                    "auth",
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    new AuthData(
-                                            null,
-                                            null,
-                                            clientId,
-                                            true
-                                    ),
-                                    roomMap
-                            )
-                            )
-                    );
+                if (clientId != null){
+                    if (authData.getHash().equals(bd.getIdPasswordHash(clientId))) {               //Сравнение хэшей паролей
+                        this.clientId = clientId;
+                        storage.storeThread(clientId, this);
+                        TreeMap<Long, Room> roomMap = new TreeMap<>();
+                        for (Long roomId : bd.getRoomIds(clientId)) roomMap.put(roomId, bd.getRoomById(roomId));
+                        System.out.println("Success");
+                        Sender.getInstance().send(clientId, new Packer().pack(
+                                new Packet(
+                                        "auth",
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        new AuthData(
+                                                null,
+                                                null,
+                                                clientId,
+                                                true
+                                        ),
+                                        roomMap
+                                )
+                                )
+                        );
 
-                    while (!socket.isClosed()) {
-                        Packet packet = new Unpacker().unpack(listen(socket.getInputStream()));
-                        if (packet.getType().equals("message")) {
-                            Sender.getInstance().send(bd.getRoomById(packet.getMessage().roomid), new Packer().pack(
-                                    new Packet(
-                                            "message",
-                                            packet.getMessage(),
-                                            null,
-                                            packet.getClientId(),
-                                            null,
-                                            null,
-                                            null
-                                    )
-                            ));
+                        while (!socket.isClosed()) {
+                            Packet packet = new Unpacker().unpack(listen(socket.getInputStream()));
+                            if (packet.getType().equals("message")) {
+                                Sender.getInstance().send(bd.getRoomById(packet.getMessage().roomid), new Packer().pack(
+                                        new Packet(
+                                                "message",
+                                                packet.getMessage(),
+                                                null,
+                                                packet.getClientId(),
+                                                null,
+                                                null,
+                                                null
+                                        )
+                                ));
+                            }
+                            if (packet.getType().equals("room")) {
+                                storage.getRoomCreateRequests().add(packet.getRoom());
+                            }
+                            if (packet.getType().equals("serviceMessage")) {
+                                storage.getServiceMessages().add(packet.getServiceMessage());
+                            }
                         }
-                        if (packet.getType().equals("room")) {
-                            storage.getRoomCreateRequests().add(packet.getRoom());
-                        }
-                        if (packet.getType().equals("serviceMessage")) {
-                            storage.getServiceMessages().add(packet.getServiceMessage());
-                        }
+                        break;
                     }
-                    break;
-                } else {
-                    attempts++;
-                    if (attempts == 3) {
+            }
+                if (i == 3) {
                         xmlPacket = new Packer().pack(
                                 new Packet(
                                         "auth",
@@ -100,15 +100,20 @@ public class SocketRunnable implements Runnable {
                                 )
                         );
                         System.out.println("\nPOST:\n" + xmlPacket + "\n");
-                        PrintWriter outputWriter = new PrintWriter(socket.getOutputStream(), true);
-                        outputWriter.println(xmlPacket);
+                        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+                        dataOutputStream.writeUTF(xmlPacket);
+                        dataOutputStream.flush();
                     }
-                }
             }
         } catch (Exception e){
-            if (e.getMessage() != null) {
-                e.printStackTrace();
-                storage.getErrorMessages().offerLast(e.getMessage());
+            if (e != null) {
+                if(e.getMessage().equals("Connection reset")){
+                    System.out.println("Client " + clientId + " disconnected\n");
+                    storage.getThreadTreeMap().remove(clientId);
+                }else {
+                    e.printStackTrace();
+                    storage.getErrorMessages().offerLast(e.getMessage());
+                }
             }
         }
     }

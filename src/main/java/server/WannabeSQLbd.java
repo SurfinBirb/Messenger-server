@@ -30,6 +30,7 @@ public class WannabeSQLbd {
         idList.add(2L);
         this.roomTreeMap = new TreeMap<>();
         roomTreeMap.put(1L, new Room(1L,1L, "TestRoom", idList, new LinkedList<>()));
+        roomTreeMap.put(2L, new Room(1L,2L,"TestRoom2", idList, new LinkedList<>()));
         this.avialableRoomsForClient = new TreeMap<>();
         List<Long> longList = new LinkedList<>();
         longList.add(1L);
