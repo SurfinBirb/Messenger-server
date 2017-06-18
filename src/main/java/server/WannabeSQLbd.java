@@ -22,9 +22,11 @@ public class WannabeSQLbd {
         this.loginToLong = new TreeMap<>();
         loginToLong.put("tester", 1L); //login: tester, id: 1
         loginToLong.put("tester2", 2L);//login: tester2, id: 2
+        loginToLong.put("tester3", 3L);
         this.idPasswordHash = new TreeMap<>();
         idPasswordHash.put(1L, "d8578edf8458ce06fbc5bb76a58c5ca4"); // password: qwerty
         idPasswordHash.put(2L, "d8578edf8458ce06fbc5bb76a58c5ca4");
+        idPasswordHash.put(3L, "d8578edf8458ce06fbc5bb76a58c5ca4");
         List<Long> idList = new LinkedList<>();
         idList.add(1L);
         idList.add(2L);
@@ -37,6 +39,7 @@ public class WannabeSQLbd {
         longList.add(2L);
         avialableRoomsForClient.put(1L,longList);
         avialableRoomsForClient.put(2L,longList);
+        avialableRoomsForClient.put(3L, new LinkedList<>());
     }
 
     public static WannabeSQLbd getInstance() {

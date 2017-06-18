@@ -58,10 +58,12 @@ public class Sender {
      */
     public void send(Long id, String xmlPacket) throws Exception{
         Storage storage = Storage.getInstance();
-        DataOutputStream dataOutputStream = new DataOutputStream(storage.getThreadTreeMap().get(id).getSocket().getOutputStream());
-        dataOutputStream.writeUTF(xmlPacket);
-        dataOutputStream.flush();
-        System.out.println("\nPOST:\n" + xmlPacket + "\n");
+        if(storage.getThreadTreeMap().get(id) != null){
+            DataOutputStream dataOutputStream = new DataOutputStream(storage.getThreadTreeMap().get(id).getSocket().getOutputStream());
+            dataOutputStream.writeUTF(xmlPacket);
+            dataOutputStream.flush();
+            System.out.println("\nPOST:\n" + xmlPacket + "\n");
+        }
     }
 
     /**

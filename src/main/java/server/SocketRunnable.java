@@ -2,6 +2,7 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.TreeMap;
 
 /**
@@ -72,6 +73,27 @@ public class SocketRunnable implements Runnable {
                                         )
                                 ));
                             }
+                            if (packet.getType().equals("roomInvitation")){
+                                if(packet.getRoom().getCreatorId().equals(bd.getRoomById(packet.getRoom().getRoomId()).getCreatorId())) {
+                                    Room room = bd.getRoomById(packet.getRoom().getRoomId());
+                                    Long newClientId = packet.getClientId();
+                                    if (!room.getIdList().contains(newClientId)) {
+                                        room.getIdList().add(newClientId);
+                                        packet = new Packet(
+                                                "roomInvitation",
+                                                null,
+                                                room,
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                        );
+                                        xmlPacket = new Packer().pack(packet);
+                                        Sender.getInstance().send(newClientId, xmlPacket); // TODO: 19.06.2017 добавить рассылку о добавлении нового лица в диалог
+                                        System.out.println(room.getIdList());
+                                    }
+                                }
+                            }
                             if (packet.getType().equals("room")) {
                                 storage.getRoomCreateRequests().add(packet.getRoom());
                             }
@@ -105,12 +127,14 @@ public class SocketRunnable implements Runnable {
                         dataOutputStream.flush();
                     }
             }
-        } catch (Exception e){
-            if (e != null) {
-                if(e.getMessage().equals("Connection reset")){
-                    System.out.println("Client " + clientId + " disconnected\n");
-                    storage.getThreadTreeMap().remove(clientId);
-                }else {
+        } catch (Exception e) {
+            if (e.getMessage() != null) {
+                if (e.getMessage().equals("Connection reset")) {
+                    if (clientId != null) {
+                        System.out.println("Client " + clientId + " disconnected\n");
+                        storage.getThreadTreeMap().remove(clientId);
+                    }
+                } else {
                     e.printStackTrace();
                     storage.getErrorMessages().offerLast(e.getMessage());
                 }
