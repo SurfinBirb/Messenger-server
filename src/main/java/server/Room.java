@@ -8,6 +8,10 @@ import java.util.List;
  */
 public class Room {
 
+    public void setRoomId(Long roomId) {
+        this.roomId = roomId;
+    }
+
     private volatile Long roomId;
     private volatile Long creatorId;
     private volatile LinkedList<Message> messages;

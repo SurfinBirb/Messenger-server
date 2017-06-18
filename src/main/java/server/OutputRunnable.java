@@ -27,7 +27,7 @@ public class OutputRunnable implements Runnable {
                 while (packet != null) {
                     String xmlPacket = new Packer().pack(packet);
                         if (packet.getType().equals("message") || packet.getType().equals("room")) {
-                            Sender.getInstance().send(packet.getRoom(), xmlPacket); // TODO: 15.05.2017 соединить входные очереди и выходную
+                            Sender.getInstance().send(packet.getRoom(), xmlPacket);
                         }
 
                         if (packet.getType().equals("servicemessage")) {
